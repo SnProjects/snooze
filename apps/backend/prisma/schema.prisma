@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  email        String         @unique
+  password     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  refreshToken String?
+  serverMemberships      ServerMember[]
+  messages     Message[]
+}
+
+model Server {
+  id        Int            @id @default(autoincrement())
+  name      String
+  creatorId Int
+  creator   String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  members   ServerMember[]
+  channels  Channel[]
+  tags      String[]       @default([])
+}
+
+model ServerMember {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  serverId  Int
+  role      String?  @default("Member")
+  user      User     @relation(fields: [userId], references: [id])
+  server    Server   @relation(fields: [serverId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Channel {
+  id        Int       @id @default(autoincrement())
+  name      String
+  serverId  Int
+  type      String    @default("TEXT") // "TEXT" or "VOICE"
+  server    Server    @relation(fields: [serverId], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int
+  username  String
+  channelId Int
+  serverId  Int
+  user      User     @relation(fields: [userId], references: [id])
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

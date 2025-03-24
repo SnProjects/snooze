@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  user-select: none;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  touch-action: manipulation;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* Disable image dragging */
+img {
+  pointer-events: none;
+}
+
+/* width */
+.scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.scrollbar::-webkit-scrollbar-track {
+  background: var(--chakra-colors-bg-emphasized);
+  border-radius: 10px;
+}
+
+/* Handle */
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--chakra-colors-fg);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--chakra-colors-fg);
+}
+
+/* Disable focus outline */
+*:focus {
+  outline: none;
+}
