@@ -35,11 +35,12 @@ Before you begin, ensure you have the following installed:
 ```bash
 git clone https://github.com/SnProjects/snooze.git
 cd snooze
+```
+
 ```bash
-
 ### 2. Install Dependencies
-
 Install all dependencies using npm (or yarn if you prefer):
+```
 
 ```bash
 npm install
