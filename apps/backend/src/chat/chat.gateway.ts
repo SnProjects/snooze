@@ -1,18 +1,13 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { Logger, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WsJwtGuard } from './ws-jwt.guard';
 import { IMessage } from '@snooze/shared-types';
+import { WebSocketProtocol } from '../custom-ws-adapter';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, WEBSOCKET_PROTOCOL: WebSocketProtocol.SOCKET_IO })
 export class ChatGateway {
   @WebSocketServer()
   server: Server;
@@ -22,7 +17,9 @@ export class ChatGateway {
   constructor(
     private readonly chatService: ChatService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.logger.log('WebSocket Gateway initialized');
+  }
 
   async handleConnection(socket: Socket) {
     const token = socket.handshake.auth.token;
@@ -62,14 +59,8 @@ export class ChatGateway {
   ): Promise<void> {
     const userId = socket.data.user.userId;
     const { message, channelId, serverId } = data;
-    const savedMessage = await this.chatService.saveMessage(
-      message,
-      userId,
-      channelId,
-    );
+    const savedMessage = await this.chatService.saveMessage(message, userId, channelId);
 
-    this.server
-      .to(`${serverId}:${channelId}`)
-      .emit('chatMessage', savedMessage);
+    this.server.to(`${serverId}:${channelId}`).emit('chatMessage', savedMessage);
   }
 }

@@ -1,4 +1,4 @@
-import { IChannel } from '@snooze/shared-types';
+import { IChannel, TChannelType } from '@snooze/shared-types';
 import apiClient from './apiClient';
 
 export const getChannels = async (
@@ -34,7 +34,7 @@ export const getVoiceChannels = async (
 export const createChannel = async (
   name: string,
   serverId: string,
-  type: 'TEXT' | 'VOICE',
+  type: TChannelType,
   accessToken: string,
 ): Promise<IChannel> => {
   const response = await apiClient.post(

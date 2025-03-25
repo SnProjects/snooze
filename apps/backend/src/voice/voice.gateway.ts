@@ -1,14 +1,11 @@
-import {
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { VoiceService } from './voice.service';
+import { WebSocketProtocol } from '../custom-ws-adapter';
 
-@WebSocketGateway(3030, { cors: true })
+@WebSocketGateway(3030, { cors: true, WEBSOCKET_PROTOCOL: WebSocketProtocol.SOCKET_IO })
 export class VoiceGateway {
   @WebSocketServer()
   server: Server;
@@ -56,16 +53,11 @@ export class VoiceGateway {
   async handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
     // Remove user from all voice channels
-    const newChannel = await this.voiceService.OnUserDisconnected(
-      client.data.user.userId,
-    );
+    const newChannel = await this.voiceService.OnUserDisconnected(client.data.user.userId);
   }
 
   @SubscribeMessage('join-voice-channel')
-  async handleJoinVoiceChannel(
-    client: Socket,
-    payload: { serverId: string; channelId: string; userId: string },
-  ) {
+  async handleJoinVoiceChannel(client: Socket, payload: { serverId: string; channelId: string; userId: string }) {
     const { serverId, channelId, userId } = payload;
     const room = `voice-${serverId}-${channelId}`;
     client.join(room);
@@ -74,11 +66,7 @@ export class VoiceGateway {
     // Notify other users in the channel
     client.to(room).emit('user-joined', { userId });
 
-    const updatedChannel = await this.voiceService.OnUserJoinedVoiceChannel(
-      serverId,
-      channelId,
-      userId,
-    );
+    const updatedChannel = await this.voiceService.OnUserJoinedVoiceChannel(serverId, channelId, userId);
 
     // make sure the user is in the updates room
     const updates_room = `updates-${serverId}`;
@@ -93,10 +81,7 @@ export class VoiceGateway {
   }
 
   @SubscribeMessage('leave-voice-channel')
-  async handleLeaveVoiceChannel(
-    client: Socket,
-    payload: { serverId: string; channelId: string; userId: string },
-  ) {
+  async handleLeaveVoiceChannel(client: Socket, payload: { serverId: string; channelId: string; userId: string }) {
     const { serverId, channelId, userId } = payload;
     const room = `voice-${serverId}-${channelId}`;
     client.leave(room);
@@ -105,11 +90,7 @@ export class VoiceGateway {
     // Notify other users in the channel
     client.to(room).emit('user-left', { userId });
 
-    const updatedChannel = await this.voiceService.OnUserLeftVoiceChannel(
-      serverId,
-      channelId,
-      userId,
-    );
+    const updatedChannel = await this.voiceService.OnUserLeftVoiceChannel(serverId, channelId, userId);
 
     // make sure the user is in the updates room
     const updates_room = `updates-${serverId}`;
@@ -170,11 +151,7 @@ export class VoiceGateway {
   ) {
     const { serverId, channelId, candidate, fromUserId, toUserId } = payload;
     const room = `voice-${serverId}-${channelId}`;
-    this.logger.log(
-      `ICE candidate from ${fromUserId} to ${toUserId} in ${room}`,
-    );
-    this.server
-      .to(room)
-      .emit('ice-candidate', { candidate, fromUserId, toUserId });
+    this.logger.log(`ICE candidate from ${fromUserId} to ${toUserId} in ${room}`);
+    this.server.to(room).emit('ice-candidate', { candidate, fromUserId, toUserId });
   }
 }

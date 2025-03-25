@@ -59,7 +59,8 @@ export function Chat() {
       fetchMessages(currentChannel.id, currentServer.id);
     }
     scrollToBottom();
-  }, [currentChannel, fetchMessages]);
+
+  }, [currentChannel]);
 
   useEffect(() => {
     scrollToBottom();

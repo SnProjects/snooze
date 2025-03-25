@@ -11,7 +11,7 @@ export class CreateChannelDto {
   @IsInt()
   serverId: string;
 
-  @ApiProperty({ description: 'The type of the channel (TEXT or VOICE)', default: 'TEXT' })
+  @ApiProperty({ description: 'The type of the channel (TEXT, VOICE, WHITEBOARD)', default: 'TEXT' })
   @IsString()
   @IsOptional()
   type?: string;

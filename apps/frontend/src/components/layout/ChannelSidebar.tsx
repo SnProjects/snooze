@@ -29,6 +29,7 @@ import {
   Select,
   createListCollection,
   HStack,
+  Collapsible,
 } from '@chakra-ui/react';
 import {
   FiMessageSquare,
@@ -41,14 +42,21 @@ import {
   FiMic,
   FiPhone,
   FiPhoneOff,
+  FiPenTool,
+  FiDribbble,
+  FiPaperclip,
 } from 'react-icons/fi';
 import { useVoice } from '../../context/VoiceContext';
 import { useNavigate } from 'react-router-dom';
+import { useWhiteboardStore } from '../../stores/whiteboard.store';
+import WhiteboardCreationDialog from '../dialoges/WhiteboardCreationDialog';
+import { TChannelType } from '@snooze/shared-types';
 
 const channelTypes = createListCollection({
   items: [
     { label: 'TEXT', value: 'TEXT' },
     { label: 'VOICE', value: 'VOICE' },
+    { label: 'WHITEBOARD', value: 'WHITEBOARD' },
   ],
 });
 
@@ -56,17 +64,16 @@ export function ChannelSidebar() {
   const {
     voiceChannels,
     textChannels,
+    whiteboardChannels: whiteboards,
     fetchChannels,
     setCurrentChannel,
     currentChannel,
     createChannel,
   } = useChannelStore();
   const { currentServer } = useServerStore();
-  const { user } = useAuthStore();
-  const { toggleMute, isMuted, peers, leaveVoiceChannel, isInVoiceChannel, connectionStatus } =
-    useVoice();
+  const { toggleMute, isMuted, leaveVoiceChannel, isInVoiceChannel, connectionStatus } = useVoice();
   const [channelName, setChannelName] = useState('');
-  const [channelType, setChannelType] = useState<'TEXT' | 'VOICE'>('VOICE');
+  const [channelType, setChannelType] = useState<TChannelType[]>(['TEXT']);
   const [channelError, setChannelError] = useState('');
 
   const nav = useNavigate();
@@ -88,17 +95,17 @@ export function ChannelSidebar() {
       setChannelError('No server selected');
       return;
     }
+
+    console.log(channelType[0], channelName);
+
     try {
-      await createChannel(channelName, currentServer.id, channelType);
+      await createChannel(channelName, currentServer.id, channelType[0]);
       setChannelName('');
       setChannelError('');
-      setChannelType('TEXT');
+      setChannelType(['TEXT']);
     } catch (err: any) {
-      setChannelError(
-        err.response?.data?.message || 'Failed to create channel',
-      );
+      setChannelError(err.response?.data?.message || 'Failed to create channel');
     } finally {
-      handleChannelDialogClose();
     }
   };
 
@@ -108,7 +115,7 @@ export function ChannelSidebar() {
 
   const handleChannelDialogClose = () => {
     setChannelName('');
-    setChannelType('TEXT');
+    setChannelType(['TEXT']);
     setChannelError('');
   };
 
@@ -132,12 +139,6 @@ export function ChannelSidebar() {
             </Badge>
           </Button>
           <Button w="100%" borderRadius="md" variant="ghost" paddingX={2}>
-            <FiFolder />
-            <Text ml="2" mr={'auto'}>
-              Drafts
-            </Text>
-          </Button>
-          <Button w="100%" borderRadius="md" variant="ghost" paddingX={2}>
             <FiStar />
             <Text ml="2" mr="auto">
               Saved Items
@@ -151,6 +152,38 @@ export function ChannelSidebar() {
               2
             </Badge>
           </Button>
+          <Collapsible.Root w="100%">
+            <Collapsible.Trigger w="100%" display={'flex'} justifyContent={'space-between'} as={'div'}>
+              <Button flex={1} mr={'auto'} borderRadius="md" variant="ghost" paddingX={2}>
+                <FiFolder />
+                <Text ml="2" mr={'auto'}>
+                  Whiteboards
+                </Text>
+              </Button>
+              <WhiteboardCreationDialog />
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              {whiteboards.length > 0 ? (
+                whiteboards.map((whiteboard) => (
+                  <Button
+                    key={whiteboard.id}
+                    w="100%"
+                    borderRadius="md"
+                    justifyContent="flex-start"
+                    onClick={() => selectChannel(whiteboard.id)}
+                    variant={currentChannel && currentChannel.id === whiteboard.id ? 'solid' : 'ghost'}
+                  >
+                    <FiPaperclip />
+                    <Text>{whiteboard.name}</Text>
+                  </Button>
+                ))
+              ) : (
+                <Box p={5}>
+                  <Text>No whiteboards found</Text>
+                </Box>
+              )}
+            </Collapsible.Content>
+          </Collapsible.Root>
         </VStack>
 
         <VStack align="start" w="100%" flex={1} mt={5}>
@@ -163,19 +196,14 @@ export function ChannelSidebar() {
               <Dialog.Root
                 placement="center"
                 motionPreset="slide-in-bottom"
-                onOpenChange={(details) => {
+                onOpenChange={(details: any) => {
                   if (!details.open) {
                     handleChannelDialogClose();
                   }
                 }}
               >
                 <DialogTrigger asChild>
-                  <IconButton
-                    aria-label="Add Channel"
-                    variant="ghost"
-                    ml="auto"
-                    size="sm"
-                  >
+                  <IconButton aria-label="Add Channel" variant="ghost" ml="auto" size="sm">
                     <FiPlus />
                   </IconButton>
                 </DialogTrigger>
@@ -196,7 +224,15 @@ export function ChannelSidebar() {
                           }}
                           mb={3}
                         />
-                        <Select.Root collection={channelTypes} size="sm">
+                        <Select.Root
+                          collection={channelTypes}
+                          size="sm"
+                          value={channelType}
+                          onValueChange={(e) => {
+                            console.log(e);
+                            setChannelType(e.value as TChannelType[]);
+                          }}
+                        >
                           <Select.HiddenSelect />
                           <Select.Label>Select Type</Select.Label>
                           <Select.Control>
@@ -229,21 +265,12 @@ export function ChannelSidebar() {
                         <DialogActionTrigger asChild>
                           <Button variant="outline">Cancel</Button>
                         </DialogActionTrigger>
-                        <Button
-                          colorScheme="teal"
-                          onClick={handleCreateChannel}
-                          ml={3}
-                        >
+                        <Button colorScheme="teal" onClick={handleCreateChannel} ml={3}>
                           Create
                         </Button>
                       </DialogFooter>
                       <DialogCloseTrigger asChild>
-                        <CloseButton
-                          size="sm"
-                          position="absolute"
-                          top={2}
-                          right={2}
-                        />
+                        <CloseButton size="sm" position="absolute" top={2} right={2} />
                       </DialogCloseTrigger>
                     </DialogContent>
                   </DialogPositioner>
@@ -259,11 +286,7 @@ export function ChannelSidebar() {
                 borderRadius="md"
                 justifyContent="flex-start"
                 onClick={() => selectChannel(channel.id)}
-                variant={
-                  currentChannel && currentChannel.id === channel.id
-                    ? 'solid'
-                    : 'ghost'
-                }
+                variant={currentChannel && currentChannel.id === channel.id ? 'solid' : 'ghost'}
               >
                 <Text># {channel.name}</Text>
               </Button>
@@ -284,11 +307,7 @@ export function ChannelSidebar() {
                 borderRadius="md"
                 justifyContent="flex-start"
                 onClick={() => selectChannel(channel.id)}
-                variant={
-                  currentChannel && currentChannel.id === channel.id
-                    ? 'solid'
-                    : 'ghost'
-                }
+                variant={currentChannel && currentChannel.id === channel.id ? 'solid' : 'ghost'}
               >
                 <FiVolume2 />
                 <Text>{channel.name}</Text>
@@ -302,16 +321,7 @@ export function ChannelSidebar() {
 
         {/* Voice Channel Controls */}
         {isInVoiceChannel && (
-          <Box
-            w="100%"
-            h="100px"
-            p={5}
-            border="1px"
-            borderColor="gray.200"
-            backgroundColor="bg.muted"
-            px={5}
-            borderBottomLeftRadius={'md'}
-          >
+          <Box w="100%" h="100px" p={5} border="1px" borderColor="gray.200" backgroundColor="bg.muted" px={5} borderBottomLeftRadius={'md'}>
             <VStack justify="space-between" align="center" w="100%" h="100%">
               <Box>
                 <Text fontSize="sm" fontWeight="bold">
@@ -319,12 +329,7 @@ export function ChannelSidebar() {
                 </Text>
               </Box>
               <HStack>
-                <IconButton
-                  aria-label="Toggle Mute"
-                  onClick={toggleMute}
-                  size="sm"
-                  rounded="full"
-                >
+                <IconButton aria-label="Toggle Mute" onClick={toggleMute} size="sm" rounded="full">
                   {isMuted ? <FiMicOff /> : <FiMic />}
                 </IconButton>
 

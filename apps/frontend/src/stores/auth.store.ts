@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { IUser } from '@snooze/shared-types';
 import { getProfile, refresh, logout } from '../services/auth.service';
-import { socketService } from '../services/socket';
+import { socketService } from '../services/sockets/message.socket';
 
 interface AuthState {
   accessToken: string | null;

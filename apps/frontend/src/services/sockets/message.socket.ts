@@ -1,6 +1,6 @@
 import io, { Socket } from 'socket.io-client';
 import { IMessage } from '@snooze/shared-types';
-import { host } from './apiClient';
+import { chatHost } from '../apiClient';
 
 export class SocketService {
   private socket: Socket | null = null;
@@ -10,7 +10,7 @@ export class SocketService {
     if (this.socket) {
       this.disconnect();
     }
-    this.socket = io(host, { auth: { token } });
+    this.socket = io(chatHost, { auth: { token } });
   }
 
   onMessage(serverId: string, channelId: string, callback: (msg: IMessage) => void) {

@@ -41,6 +41,7 @@ export class ChannelService {
 
     return this.prisma.channel.findMany({
       where: { serverId },
+      include: { peers: true },
     });
   }
 
@@ -72,6 +73,42 @@ export class ChannelService {
     return this.prisma.channel.findMany({
       where: { serverId, type: 'VOICE' },
       include: { peers: true },
+    });
+  }
+
+  async findWhiteboardChannels(serverId: string, userId: any) {
+    const server = await this.prisma.server.findUnique({
+      where: { id: serverId },
+      include: { members: true },
+    });
+
+    if (!server || !server.members.some((member) => member.userId === userId)) {
+      throw new ForbiddenException('You are not a member of this server');
+    }
+
+    return this.prisma.channel.findMany({
+      where: { serverId, type: 'WHITEBOARD' },
+    });
+  }
+
+  async updateChannelData(id: string, data: any) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id },
+    });
+
+    if (!channel) {
+      throw new ConflictException('Channel not found');
+    }
+
+    if (channel.type !== 'WHITEBOARD') {
+      throw new ConflictException('Channel is not a whiteboard');
+    }
+
+    return this.prisma.channel.update({
+      where: { id },
+      data: {
+        data: data,
+      },
     });
   }
 }

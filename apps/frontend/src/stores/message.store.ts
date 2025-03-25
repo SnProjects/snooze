@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { IMessage } from '@snooze/shared-types';
 import { getMessages } from '../services/message.service';
-import { socketService } from '../services/socket';
+import { socketService } from '../services/sockets/message.socket';
 import { useAuthStore } from './auth.store';
 import { useServerStore } from './server.store';
 import { useChannelStore } from './channel.store';

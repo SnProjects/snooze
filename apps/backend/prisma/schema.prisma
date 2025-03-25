@@ -20,26 +20,27 @@ model User {
 }
 
 model Server {
-  id        String         @id @default(uuid())
-  name      String
-  creatorId String
-  creator   String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  members   ServerMember[]
-  channels  Channel[]
-  tags      String[]       @default([])
+  id          String         @id @default(uuid())
+  name        String
+  creatorId   String
+  creator     String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  members     ServerMember[]
+  channels    Channel[]
+  tags        String[]       @default([])
+  whiteboards Whiteboard[]
 }
 
 model ServerMember {
-  id        String   @id @default(uuid())
-  userId    String
-  serverId  String
-  role      String?  @default("Member")
-  user      User     @relation(fields: [userId], references: [id])
-  server    Server   @relation(fields: [serverId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  userId     String
+  serverId   String
+  role       String?  @default("Member")
+  user       User     @relation(fields: [userId], references: [id])
+  server     Server   @relation(fields: [serverId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   activeVc   Channel? @relation("ServerMemberChannel", fields: [activeVcId], references: [id])
   activeVcId String?
 }
@@ -48,12 +49,13 @@ model Channel {
   id        String         @id @default(uuid())
   name      String
   serverId  String
-  type      String         @default("TEXT") // "TEXT" or "VOICE"
+  type      String         @default("TEXT") // "TEXT", "VOICE" or "WHITEBOARD"
+  data      Json           @default("{}") // Stores Excalidraw JSON data
   server    Server         @relation(fields: [serverId], references: [id])
   messages  Message[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  peers   ServerMember[] @relation("ServerMemberChannel")
+  peers     ServerMember[] @relation("ServerMemberChannel")
 }
 
 model Message {
@@ -65,6 +67,16 @@ model Message {
   serverId  String
   user      User     @relation(fields: [userId], references: [id])
   channel   Channel  @relation(fields: [channelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Whiteboard {
+  id        String   @id @default(uuid())
+  name      String
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id])
+  data      Json     @default("{}") // Stores Excalidraw JSON data
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
