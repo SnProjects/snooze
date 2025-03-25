@@ -1,7 +1,7 @@
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 import apiClient from './apiClient';
 
-export const getMessages = async (channelId: number, token: string): Promise<Message[]> => {
+export const getMessages = async (channelId: string, token: string): Promise<IMessage[]> => {
   const response = await apiClient.get('/chat/messages', {
     params: { channelId },
     headers: { Authorization: `Bearer ${token}` },

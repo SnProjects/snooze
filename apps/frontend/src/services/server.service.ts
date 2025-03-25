@@ -1,7 +1,7 @@
-import { Server } from '@snooze/shared-types';
+import { IServer } from '@snooze/shared-types';
 import apiClient from './apiClient';
 
-export const getServers = async (accessToken: string): Promise<Server[]> => {
+export const getServers = async (accessToken: string): Promise<IServer[]> => {
   const response = await apiClient.get('/servers', {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -11,7 +11,7 @@ export const getServers = async (accessToken: string): Promise<Server[]> => {
 export const createServer = async (
   name: string,
   accessToken: string,
-): Promise<Server> => {
+): Promise<IServer> => {
   const response = await apiClient.post(
     '/servers',
     { name },
@@ -21,7 +21,7 @@ export const createServer = async (
 };
 
 export const getUsersInServer = async (
-  serverId: number,
+  serverId: string,
   accessToken: string,
 ): Promise<any[]> => {
   const response = await apiClient.get(`/servers/${serverId}/users`, {
@@ -31,9 +31,9 @@ export const getUsersInServer = async (
 };
 
 export const joinServer = async (
-  serverId: number,
+  serverId: string,
   accessToken: string,
-): Promise<Server> => {
+): Promise<IServer> => {
   const response = await apiClient.post(
     `/servers/${serverId}/join`,
     {},

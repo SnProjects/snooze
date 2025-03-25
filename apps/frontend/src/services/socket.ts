@@ -1,10 +1,10 @@
 import io, { Socket } from 'socket.io-client';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 import { host } from './apiClient';
 
 export class SocketService {
   private socket: Socket | null = null;
-  private listeners: Map<string, (msg: Message) => void> = new Map();
+  private listeners: Map<string, (msg: IMessage) => void> = new Map();
 
   connect(token: string) {
     if (this.socket) {
@@ -13,14 +13,14 @@ export class SocketService {
     this.socket = io(host, { auth: { token } });
   }
 
-  onMessage(serverId: number, channelId: number, callback: (msg: Message) => void) {
+  onMessage(serverId: string, channelId: string, callback: (msg: IMessage) => void) {
     if (this.socket) {
       const eventKey = `chatMessage-${serverId}:${channelId}`;
       // Remove any existing listener for this channel to prevent duplicates
       if (this.listeners.has(eventKey)) {
         this.socket.off('chatMessage', this.listeners.get(eventKey));
       }
-      const handler = (msg: Message) => {
+      const handler = (msg: IMessage) => {
         if (msg.serverId === serverId && msg.channelId === channelId) {
           console.log('Received message:', msg);
           callback(msg);
@@ -31,7 +31,7 @@ export class SocketService {
     }
   }
 
-  sendMessage(message: string, channelId: number, serverId: number) {
+  sendMessage(message: string, channelId: string, serverId: string) {
     if (this.socket) {
       this.socket.emit('chatMessage', { message, channelId, serverId });
     }

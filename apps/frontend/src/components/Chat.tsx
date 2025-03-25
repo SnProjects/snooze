@@ -17,10 +17,10 @@ import {
 } from '@chakra-ui/react';
 import { FiSend, FiSmile, FiMic } from 'react-icons/fi';
 import React from 'react';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 
 export type MessageItemProps = {
-  msg: Message
+  msg: IMessage
 };
 
 const MessageItem = memo(({ msg }: MessageItemProps) => {

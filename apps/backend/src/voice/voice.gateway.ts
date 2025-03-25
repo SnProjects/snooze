@@ -35,17 +35,17 @@ export class VoiceGateway {
       const user = await this.voiceService.prisma.user.findUnique({
         where: { id: payload.userId },
         include: {
-          servers: { include: { server: { include: { channels: true } } } },
+          serverMemberships: {
+            include: { server: { include: { channels: true } } },
+          },
         },
       });
 
       this.logger.log(`User connected: ${user.username}`);
-      user?.servers.forEach((server) => {
-        server.server.channels.forEach((channel) => {
-          if (channel.type !== 'VOICE') return;
-          client.join(`channel-${server.server.id}:${channel.id}`);
-          this.logger.log(`User joined ${server.server.id}:${channel.id}`);
-        });
+      user?.serverMemberships.forEach((server) => {
+        // updates-{serverId} is a room for server updates
+        client.join(`updates-${server.serverId}`);
+        this.logger.log(`User joined updates-${server.server.id}`);
       });
     } catch {
       client.disconnect();
@@ -53,40 +53,74 @@ export class VoiceGateway {
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    // Remove user from all voice channels
+    const newChannel = await this.voiceService.OnUserDisconnected(
+      client.data.user.userId,
+    );
   }
 
   @SubscribeMessage('join-voice-channel')
-  handleJoinVoiceChannel(
+  async handleJoinVoiceChannel(
     client: Socket,
-    payload: { serverId: number; channelId: number; userId: number },
+    payload: { serverId: string; channelId: string; userId: string },
   ) {
     const { serverId, channelId, userId } = payload;
     const room = `voice-${serverId}-${channelId}`;
-    const updates_room = `updates-${serverId}-${channelId}`;
     client.join(room);
     this.logger.log(`User ${userId} joined voice channel ${room}`);
 
     // Notify other users in the channel
     client.to(room).emit('user-joined', { userId });
-    client.to(updates_room).emit('user-joined', { userId });
+
+    const updatedChannel = await this.voiceService.OnUserJoinedVoiceChannel(
+      serverId,
+      channelId,
+      userId,
+    );
+
+    // make sure the user is in the updates room
+    const updates_room = `updates-${serverId}`;
+
+    client.join(updates_room);
+    //todo: emit to everyone in the updates room
+    this.server.to(updates_room).emit(updates_room, {
+      status: 'vc-user-joined',
+      channelId: channelId,
+      peers: updatedChannel.peers,
+    });
   }
 
   @SubscribeMessage('leave-voice-channel')
-  handleLeaveVoiceChannel(
+  async handleLeaveVoiceChannel(
     client: Socket,
-    payload: { serverId: number; channelId: number; userId: number },
+    payload: { serverId: string; channelId: string; userId: string },
   ) {
     const { serverId, channelId, userId } = payload;
     const room = `voice-${serverId}-${channelId}`;
-    const updates_room = `updates-${serverId}-${channelId}`;
     client.leave(room);
     this.logger.log(`User ${userId} left voice channel ${room}`);
 
     // Notify other users in the channel
     client.to(room).emit('user-left', { userId });
-    client.to(updates_room).emit('user-left', { userId });
+
+    const updatedChannel = await this.voiceService.OnUserLeftVoiceChannel(
+      serverId,
+      channelId,
+      userId,
+    );
+
+    // make sure the user is in the updates room
+    const updates_room = `updates-${serverId}`;
+
+    client.join(updates_room);
+    //todo: emit to everyone in the updates room
+    this.server.to(updates_room).emit(updates_room, {
+      status: 'vc-user-left',
+      channelId: channelId,
+      peers: updatedChannel.peers,
+    });
   }
 
   @SubscribeMessage('offer')
@@ -110,11 +144,11 @@ export class VoiceGateway {
   handleAnswer(
     client: Socket,
     payload: {
-      serverId: number;
-      channelId: number;
+      serverId: string;
+      channelId: string;
       answer: any;
-      fromUserId: number;
-      toUserId: number;
+      fromUserId: string;
+      toUserId: string;
     },
   ) {
     const { serverId, channelId, answer, fromUserId, toUserId } = payload;
@@ -127,11 +161,11 @@ export class VoiceGateway {
   handleIceCandidate(
     client: Socket,
     payload: {
-      serverId: number;
-      channelId: number;
+      serverId: string;
+      channelId: string;
       candidate: any;
-      fromUserId: number;
-      toUserId: number;
+      fromUserId: string;
+      toUserId: string;
     },
   ) {
     const { serverId, channelId, candidate, fromUserId, toUserId } = payload;

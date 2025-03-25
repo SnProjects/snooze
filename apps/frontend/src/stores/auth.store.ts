@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { User } from '@snooze/shared-types';
+import { IUser } from '@snooze/shared-types';
 import { getProfile, refresh, logout } from '../services/auth.service';
 import { socketService } from '../services/socket';
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  user: User | null;
+  user: IUser | null;
   loading: boolean;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;

@@ -1,17 +1,17 @@
-import { AuthResponse, User } from '@snooze/shared-types';
+import { IAuthResponse, IUser } from '@snooze/shared-types';
 import apiClient from './apiClient';
 
-export const register = async (username: string, email: string, password: string): Promise<AuthResponse> => {
+export const register = async (username: string, email: string, password: string): Promise<IAuthResponse> => {
   const response = await apiClient.post('/auth/register', { username, email, password });
   return response.data;
 };
 
-export const login = async (identifier: string, password: string): Promise<AuthResponse> => {
+export const login = async (identifier: string, password: string): Promise<IAuthResponse> => {
   const response = await apiClient.post('/auth/login', { identifier, password });
   return response.data;
 };
 
-export const refresh = async (refreshToken: string): Promise<AuthResponse> => {
+export const refresh = async (refreshToken: string): Promise<IAuthResponse> => {
   const response = await apiClient.post('/auth/refresh', { refresh_token: refreshToken });
   return response.data;
 };
@@ -22,7 +22,7 @@ export const logout = async (token: string) => {
   });
 };
 
-export const getProfile = async (token: string): Promise<User> => {
+export const getProfile = async (token: string): Promise<IUser> => {
   const response = await apiClient.get('/auth/profile', {
     headers: { Authorization: `Bearer ${token}` },
   });

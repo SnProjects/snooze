@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ServerService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createServerDto: CreateServerDto, userId: number) {
+  async create(createServerDto: CreateServerDto, userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const server = await this.prisma.server.create({
       data: {
@@ -30,7 +34,7 @@ export class ServerService {
     return server;
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: string) {
     const servers = await this.prisma.server.findMany({
       where: {
         members: {
@@ -41,7 +45,7 @@ export class ServerService {
     return servers;
   }
 
-  async findUsers(serverId: number, userId: number) {
+  async findUsers(serverId: string, userId: string) {
     const server = await this.prisma.server.findUnique({
       where: { id: serverId },
       include: {
@@ -62,7 +66,7 @@ export class ServerService {
     }));
   }
 
-  async join(serverId: number, userId: number) {
+  async join(serverId: string, userId: string) {
     const server = await this.prisma.server.findUnique({
       where: { id: serverId },
       include: { members: true },

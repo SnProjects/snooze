@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 
 @Injectable()
 export class ChatService {
@@ -12,9 +12,9 @@ export class ChatService {
 
   async saveMessage(
     content: string,
-    userId: number,
-    channelId: number,
-  ): Promise<Message> {
+    userId: string,
+    channelId: string,
+  ): Promise<IMessage> {
     // Fetch the channel to validate it exists and belongs to the server
     const channel = await this.prisma.channel.findUnique({
       where: { id: channelId },
@@ -57,7 +57,7 @@ export class ChatService {
     };
   }
 
-  async getMessages(channelId: number): Promise<Message[]> {
+  async getMessages(channelId: string): Promise<IMessage[]> {
     // Validate that the channel belongs to the server
     const channel = await this.prisma.channel.findUnique({
       where: { id: channelId },

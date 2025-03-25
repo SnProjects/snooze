@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Server, ServerMember } from '@snooze/shared-types';
+import { IServer, IServerMember } from '@snooze/shared-types';
 import {
   getServers,
   createServer,
@@ -9,13 +9,13 @@ import { useAuthStore } from './auth.store';
 import { useChannelStore } from './channel.store';
 
 interface ServerState {
-  servers: Server[];
-  currentServer: Server | null;
+  servers: IServer[];
+  currentServer: IServer | null;
   fetchServers: () => Promise<void>;
   createServer: (name: string) => Promise<void>;
-  joinServer: (serverId: number) => Promise<void>;
-  setCurrentServer: (server: Server) => Promise<void>;
-  members: ServerMember[];
+  joinServer: (serverId: string) => Promise<void>;
+  setCurrentServer: (server: IServer) => Promise<void>;
+  members: IServerMember[];
 }
 
 export const useServerStore = create<ServerState>((set) => ({
@@ -50,7 +50,7 @@ export const useServerStore = create<ServerState>((set) => ({
       throw error;
     }
   },
-  joinServer: async (serverId: number) => {
+  joinServer: async (serverId: string) => {
     const accessToken = useAuthStore.getState().accessToken;
     if (!accessToken) return;
     try {
@@ -63,6 +63,9 @@ export const useServerStore = create<ServerState>((set) => ({
     }
   },
   setCurrentServer: async (server) => {
+
+    if (server.id === useServerStore.getState().currentServer?.id) return;
+
     set({ currentServer: server });
     await useChannelStore.getState().fetchChannels(server.id);
   },

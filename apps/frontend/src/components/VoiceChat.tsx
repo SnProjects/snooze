@@ -14,12 +14,40 @@ import {
   IconButton,
   HStack,
   Spinner,
+  Badge,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useVoice } from '../context/VoiceContext';
 import { HiPhone } from 'react-icons/hi';
 import { LuPhone } from 'react-icons/lu';
 import { FiPhoneOff } from 'react-icons/fi';
+import { IServerMember } from '@snooze/shared-types';
+
+function VoiceMember({ member }: { member: IServerMember }) {
+  return (
+    <Box
+      display="flex"
+      alignItems="center"
+      mb={2}
+      bg="bg.panel"
+      px={40}
+      py={20}
+      rounded="md"
+      h="fit-content"
+      w="fit-content"
+      position="relative"
+    >
+      <Avatar.Root colorPalette="teal" size={'2xl'}>
+        <Avatar.Fallback name={member?.user.username || 'User'} />
+        <Avatar.Image />
+      </Avatar.Root>
+
+      <Badge size={"lg"} colorPalette="teal" position={'absolute'} bottom={5} left={5}>
+        {member?.user.username}
+      </Badge>
+    </Box>
+  );
+}
 
 export function VoiceChat() {
   const { currentChannel } = useChannelStore();
@@ -29,7 +57,6 @@ export function VoiceChat() {
     leaveVoiceChannel,
     toggleMute,
     isMuted,
-    peers,
     isInVoiceChannel,
     currentChannel: connectedVoice,
   } = useVoice();
@@ -37,7 +64,7 @@ export function VoiceChat() {
   const handleJoinVoiceChannel = () => {
     if (!currentServer) return;
     const channelId = currentChannel?.id;
-    joinVoiceChannel(currentServer.id, channelId as number);
+    joinVoiceChannel(currentServer.id, channelId || '');
   };
 
   const handleLeaveVoiceChannel = () => {
@@ -57,7 +84,6 @@ export function VoiceChat() {
       <Flex
         align="center"
         borderBottom="1px"
-        borderColor="gray.200"
         pb={2}
         mb={1}
         p={5}
@@ -72,7 +98,11 @@ export function VoiceChat() {
       </Flex>
 
       {/* Display voice peers */}
-      <Flex wrap={'wrap'} p={5} flex={1}></Flex>
+      <Flex wrap={'wrap'} p={5} flex={1} gap={5}>
+        {currentChannel?.peers.map((peer) => (
+          <VoiceMember key={peer.id} member={peer} />
+        ))}
+      </Flex>
 
       {/* Join Voice Channel Button */}
       <HStack justifyContent="center" p={5}>
@@ -80,7 +110,7 @@ export function VoiceChat() {
         connectedVoice?.channelId === currentChannel?.id ? (
           <IconButton
             aria-label="Leave Voice Channel"
-            colorPalette={"red"}
+            colorPalette={'red'}
             onClick={() => handleLeaveVoiceChannel()}
             mb={2}
             rounded={'full'}
@@ -91,7 +121,7 @@ export function VoiceChat() {
         ) : (
           <IconButton
             aria-label="Join Voice Channel"
-            colorPalette={"whiteAlpha"}
+            colorPalette={'whiteAlpha'}
             onClick={() => handleJoinVoiceChannel()}
             disabled={!currentChannel}
             mb={2}

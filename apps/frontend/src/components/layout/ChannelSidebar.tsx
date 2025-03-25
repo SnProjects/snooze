@@ -28,6 +28,7 @@ import {
   CloseButton,
   Select,
   createListCollection,
+  HStack,
 } from '@chakra-ui/react';
 import {
   FiMessageSquare,
@@ -101,7 +102,7 @@ export function ChannelSidebar() {
     }
   };
 
-  const selectChannel = (channelId: number) => {
+  const selectChannel = (channelId: string) => {
     nav(`/app/${currentServer?.id}/${channelId}`);
   };
 
@@ -115,7 +116,7 @@ export function ChannelSidebar() {
 
   return (
     <Box w="250px" overflow={'hidden'}>
-      <VStack align="start" spaceY={0.5} w="100%" h="100%">
+      <VStack align="start" w="100%" h="100%">
         {/* Server Name */}
         <Text fontSize="lg" fontWeight="bold" w="100%" p={5} boxShadow="sm">
           {currentServer ? currentServer.name : 'Select a Server'}
@@ -152,7 +153,7 @@ export function ChannelSidebar() {
           </Button>
         </VStack>
 
-        <VStack align="start" spaceY={0.5} w="100%" flex={1}>
+        <VStack align="start" w="100%" flex={1} mt={5}>
           {/* Channels */}
           <Flex align="center" w="100%" px={5}>
             <Text fontSize="sm" fontWeight="bold">
@@ -250,7 +251,7 @@ export function ChannelSidebar() {
               </Dialog.Root>
             )}
           </Flex>
-          <VStack align="start" spaceY={0.5} w="100%" px={5}>
+          <VStack align="start" w="100%" px={5}>
             {textChannels.map((channel) => (
               <Button
                 key={channel.id}
@@ -270,12 +271,12 @@ export function ChannelSidebar() {
           </VStack>
 
           {/* Voice Channels */}
-          <Flex align="center" w="100%" px={5}>
+          <Flex align="center" w="100%" px={5} mt={5}>
             <Text fontSize="sm" fontWeight="bold">
               Voice Channels
             </Text>
           </Flex>
-          <VStack align="start" spaceY={1} px={5} w="100%">
+          <VStack align="start" px={5} w="100%">
             {voiceChannels.map((channel) => (
               <Button
                 key={channel.id}
@@ -290,8 +291,10 @@ export function ChannelSidebar() {
                 }
               >
                 <FiVolume2 />
-
                 <Text>{channel.name}</Text>
+                <Badge ml="auto" colorScheme="green">
+                  {channel.peers?.length}
+                </Badge>
               </Button>
             ))}
           </VStack>
@@ -302,19 +305,20 @@ export function ChannelSidebar() {
           <Box
             w="100%"
             h="100px"
-            p={2}
+            p={5}
             border="1px"
             borderColor="gray.200"
             backgroundColor="bg.muted"
             px={5}
+            borderBottomLeftRadius={'md'}
           >
-            <Flex justify="space-between" align="center" w="100%" h="100%">
-              <div>
+            <VStack justify="space-between" align="center" w="100%" h="100%">
+              <Box>
                 <Text fontSize="sm" fontWeight="bold">
                   {connectionStatus}
                 </Text>
-              </div>
-              <Flex>
+              </Box>
+              <HStack>
                 <IconButton
                   aria-label="Toggle Mute"
                   onClick={toggleMute}
@@ -336,8 +340,8 @@ export function ChannelSidebar() {
                 >
                   <FiPhoneOff />
                 </IconButton>
-              </Flex>
-            </Flex>
+              </HStack>
+            </VStack>
           </Box>
         )}
       </VStack>

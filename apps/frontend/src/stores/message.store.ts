@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 import { getMessages } from '../services/message.service';
 import { socketService } from '../services/socket';
 import { useAuthStore } from './auth.store';
@@ -7,17 +7,17 @@ import { useServerStore } from './server.store';
 import { useChannelStore } from './channel.store';
 
 interface MessageState {
-  messages: Message[];
+  messages: IMessage[];
   loading: boolean;
-  fetchMessages: (channelId: number, serverId: number) => Promise<void>;
-  addMessage: (message: Message) => void;
-  sendMessage: (content: string, channelId: number, serverId: number) => void;
+  fetchMessages: (channelId: string, serverId: string) => Promise<void>;
+  addMessage: (message: IMessage) => void;
+  sendMessage: (content: string, channelId: string, serverId: string) => void;
 }
 
 export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
   loading: false,
-  fetchMessages: async (channelId: number, serverId: number) => {
+  fetchMessages: async (channelId: string, serverId: string) => {
     const accessToken = useAuthStore.getState().accessToken; // Use getState
     if (!accessToken) return;
     set({ loading: true });

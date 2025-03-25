@@ -6,7 +6,7 @@ import { CreateChannelDto } from './dto/create-channel.dto';
 export class ChannelService {
   constructor(private prisma: PrismaService) {}
 
-  async createChannel(dto: CreateChannelDto, userId: number) {
+  async createChannel(dto: CreateChannelDto, userId: string) {
     const serverId = dto.serverId;
     const existingChannel = await this.prisma.channel.findFirst({
       where: {
@@ -29,7 +29,7 @@ export class ChannelService {
     });
   }
 
-  async findAll(serverId: number, userId: number) {
+  async findAll(serverId: string, userId: string) {
     const server = await this.prisma.server.findUnique({
       where: { id: serverId },
       include: { members: true },
@@ -44,7 +44,7 @@ export class ChannelService {
     });
   }
 
-  async findTextChannels(serverId: number, userId: number) {
+  async findTextChannels(serverId: string, userId: string) {
     const server = await this.prisma.server.findUnique({
       where: { id: serverId },
       include: { members: true },
@@ -59,7 +59,7 @@ export class ChannelService {
     });
   }
 
-  async findVoiceChannels(serverId: number, userId: number) {
+  async findVoiceChannels(serverId: string, userId: string) {
     const server = await this.prisma.server.findUnique({
       where: { id: serverId },
       include: { members: true },
@@ -71,6 +71,7 @@ export class ChannelService {
 
     return this.prisma.channel.findMany({
       where: { serverId, type: 'VOICE' },
+      include: { peers: true },
     });
   }
 }

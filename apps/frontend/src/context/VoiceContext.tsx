@@ -1,8 +1,8 @@
 import React, {
   createContext,
   useContext,
-  useEffect,
   useRef,
+  useEffect,
   useState,
 } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -12,16 +12,17 @@ import { getUsersInServer } from '../services/server.service';
 import { voiceHost } from '../services/apiClient';
 import { useChannelStore } from '../stores';
 import AudioPlayer from '../components/AudioPlayer';
+import { useServerStore } from '../stores/server.store';
 
 interface VoiceContextType {
-  joinVoiceChannel: (serverId: number, channelId: number) => void;
+  joinVoiceChannel: (serverId: string, channelId: string) => void;
   leaveVoiceChannel: () => void;
   toggleMute: () => void;
   isMuted: boolean;
-  peers: { userId: number; username: string; stream: MediaStream }[];
+  peers: { userId: string; username: string; stream: MediaStream }[];
   connectionStatus: string;
   isInVoiceChannel: boolean; // New: Indicates if the user is in a voice channel
-  currentChannel: { serverId: number; channelId: number } | null;
+  currentChannel: { serverId: string; channelId: string } | null;
 }
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined);
@@ -33,19 +34,21 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
   const {} = useChannelStore();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [peers, setPeers] = useState<
-    { userId: number; username: string; stream: MediaStream }[]
+    { userId: string; username: string; stream: MediaStream }[]
   >([]);
   const [isMuted, setIsMuted] = useState(false);
   const [currentChannel, setCurrentChannel] = useState<{
-    serverId: number;
-    channelId: number;
+    serverId: string;
+    channelId: string;
   } | null>(null);
   const [serverMembers, setServerMembers] = useState<
-    { id: number; username: string }[]
+    { id: string; username: string }[]
   >([]);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const userStream = useRef<MediaStream | null>(null);
-  const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
+  const peersRef = useRef<Map<string, Peer.Instance>>(new Map());
+  const { updateVoicePeers } = useChannelStore();
+  const { servers } = useServerStore();
 
   // Compute whether the user is in a voice channel
   const isInVoiceChannel = currentChannel !== null;
@@ -84,6 +87,30 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  useEffect(() => {
+    if (!socket || !user || !servers) return;
+
+    for (const server of servers) {
+      socket.on(`updates-${server.id}`, (data) => {
+        if (
+          data.status === 'vc-user-joined' ||
+          data.status === 'vc-user-left'
+        ) {
+          updateVoicePeers(data.channelId, data.peers);
+        }
+      });
+    }
+
+    // Notify when there is any type of update
+
+    // Cleanup
+    return () => {
+      for (const server of servers) {
+        socket.off(`updates-${server.id}`);
+      }
+    };
+  }, [socket, servers, user]);
+
   // Handle socket events and peer connections
   useEffect(() => {
     if (!socket || !user) return;
@@ -102,9 +129,10 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
     };
+
     fetchMembers();
 
-    socket.on('user-joined', ({ userId }: { userId: number }) => {
+    socket.on('user-joined', ({ userId }: { userId: string }) => {
       if (userId === user.id || !userStream.current || !currentChannel) return;
       // Update status to indicate initiating a peer connection
       setConnectionStatus('Connected');
@@ -145,7 +173,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
       peersRef.current.set(userId, peer);
     });
 
-    socket.on('user-left', ({ userId }: { userId: number }) => {
+    socket.on('user-left', ({ userId }: { userId: string }) => {
       const peer = peersRef.current.get(userId);
       if (peer) {
         peer.destroy();
@@ -165,8 +193,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
         toUserId,
       }: {
         offer: any;
-        fromUserId: number;
-        toUserId: number;
+        fromUserId: string;
+        toUserId: string;
       }) => {
         if (toUserId !== user.id || !userStream.current || !currentChannel)
           return;
@@ -218,8 +246,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
         toUserId,
       }: {
         answer: any;
-        fromUserId: number;
-        toUserId: number;
+        fromUserId: string;
+        toUserId: string;
       }) => {
         if (toUserId !== user.id) return;
         const peer = peersRef.current.get(fromUserId);
@@ -239,8 +267,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
         toUserId,
       }: {
         candidate: any;
-        fromUserId: number;
-        toUserId: number;
+        fromUserId: string;
+        toUserId: string;
       }) => {
         if (toUserId !== user.id) return;
         const peer = peersRef.current.get(fromUserId);
@@ -259,13 +287,13 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [socket, user, currentChannel, accessToken]);
 
-  const joinVoiceChannel = (serverId: number, channelId: number) => {
+  const joinVoiceChannel = (serverId: string, channelId: string) => {
     if (!socket || !user) return;
     setCurrentChannel({ serverId, channelId });
     // Updated status
     setConnectionStatus('Connecting...');
     startAudioStream();
-    console.log('Joining voice channel', serverId, channelId);
+
     socket.emit('join-voice-channel', { serverId, channelId, userId: user.id });
   };
 

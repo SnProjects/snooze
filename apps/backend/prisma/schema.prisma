@@ -8,21 +8,21 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  username     String         @unique
-  email        String         @unique
-  password     String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  refreshToken String?
-  serverMemberships      ServerMember[]
-  messages     Message[]
+  id                String         @id @default(uuid())
+  username          String         @unique
+  email             String         @unique
+  password          String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  refreshToken      String?
+  serverMemberships ServerMember[]
+  messages          Message[]
 }
 
 model Server {
-  id        Int            @id @default(autoincrement())
+  id        String         @id @default(uuid())
   name      String
-  creatorId Int
+  creatorId String
   creator   String
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -32,34 +32,37 @@ model Server {
 }
 
 model ServerMember {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  serverId  Int
+  id        String   @id @default(uuid())
+  userId    String
+  serverId  String
   role      String?  @default("Member")
   user      User     @relation(fields: [userId], references: [id])
   server    Server   @relation(fields: [serverId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  activeVc   Channel? @relation("ServerMemberChannel", fields: [activeVcId], references: [id])
+  activeVcId String?
 }
 
 model Channel {
-  id        Int       @id @default(autoincrement())
+  id        String         @id @default(uuid())
   name      String
-  serverId  Int
-  type      String    @default("TEXT") // "TEXT" or "VOICE"
-  server    Server    @relation(fields: [serverId], references: [id])
+  serverId  String
+  type      String         @default("TEXT") // "TEXT" or "VOICE"
+  server    Server         @relation(fields: [serverId], references: [id])
   messages  Message[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  peers   ServerMember[] @relation("ServerMemberChannel")
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   content   String
-  userId    Int
+  userId    String
   username  String
-  channelId Int
-  serverId  Int
+  channelId String
+  serverId  String
   user      User     @relation(fields: [userId], references: [id])
   channel   Channel  @relation(fields: [channelId], references: [id])
   createdAt DateTime @default(now())

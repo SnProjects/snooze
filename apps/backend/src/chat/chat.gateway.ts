@@ -10,7 +10,7 @@ import { ChatService } from './chat.service';
 import { Logger, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WsJwtGuard } from './ws-jwt.guard';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
@@ -35,12 +35,12 @@ export class ChatGateway {
       const user = await this.chatService.prisma.user.findUnique({
         where: { id: payload.userId },
         include: {
-          servers: { include: { server: { include: { channels: true } } } },
+          serverMemberships: { include: { server: { include: { channels: true } } } },
         },
       });
 
       this.logger.log(`User connected: ${user.username}`);
-      user?.servers.forEach((server) => {
+      user?.serverMemberships.forEach((server) => {
         server.server.channels.forEach((channel) => {
           if (channel.type !== 'TEXT') return;
           socket.join(`${server.server.id}:${channel.id}`);
@@ -57,7 +57,7 @@ export class ChatGateway {
   @SubscribeMessage('chatMessage')
   async handleMessage(
     @MessageBody()
-    data: { message: string; channelId: number; serverId: number },
+    data: { message: string; channelId: string; serverId: string },
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {
     const userId = socket.data.user.userId;

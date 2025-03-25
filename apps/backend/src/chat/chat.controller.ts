@@ -8,7 +8,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Message } from '@snooze/shared-types';
+import { IMessage } from '@snooze/shared-types';
 
 @ApiTags('chat')
 @Controller('chat')
@@ -26,8 +26,8 @@ export class ChatController {
     type: Object,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiQuery({ name: 'channelId', required: true, type: Number })
-  async getMessages(@Query('channelId') channelId: string): Promise<Message[]> {
-    return this.chatService.getMessages(parseInt(channelId, 10));
+  @ApiQuery({ name: 'channelId', required: true, type: String })
+  async getMessages(@Query('channelId') channelId: string): Promise<IMessage[]> {
+    return this.chatService.getMessages(channelId);
   }
 }

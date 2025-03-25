@@ -6,7 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthResponse, User } from '@snooze/shared-types';
+import { IAuthResponse, IUser } from '@snooze/shared-types';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -17,7 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<AuthResponse> {
+  async register(dto: RegisterDto): Promise<IAuthResponse> {
     const { username, email, password } = dto;
 
     const existingUser = await this.prisma.user.findFirst({
@@ -39,7 +39,7 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async login(dto: LoginDto): Promise<AuthResponse> {
+  async login(dto: LoginDto): Promise<IAuthResponse> {
     const { identifier, password } = dto;
     const user = await this.prisma.user.findFirst({
       where: { OR: [{ username: identifier }, { email: identifier }] },
@@ -51,7 +51,7 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async refresh(refreshToken: string): Promise<AuthResponse> {
+  async refresh(refreshToken: string): Promise<IAuthResponse> {
     const user = await this.prisma.user.findFirst({
       where: { refreshToken },
     });
@@ -68,14 +68,14 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async logout(userId: number) {
+  async logout(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },
     });
   }
 
-  private async generateTokens(user: User): Promise<AuthResponse> {
+  private async generateTokens(user: IUser): Promise<IAuthResponse> {
     const payload = { userId: user.id, username: user.username };
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });

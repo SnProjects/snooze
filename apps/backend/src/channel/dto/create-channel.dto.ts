@@ -9,7 +9,7 @@ export class CreateChannelDto {
 
   @ApiProperty({ description: 'Server ID', example: 1 })
   @IsInt()
-  serverId: number;
+  serverId: string;
 
   @ApiProperty({ description: 'The type of the channel (TEXT or VOICE)', default: 'TEXT' })
   @IsString()

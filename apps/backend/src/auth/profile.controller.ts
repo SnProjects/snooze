@@ -6,7 +6,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { User } from '@snooze/shared-types';
+import { IUser } from '@snooze/shared-types';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('auth')
@@ -20,7 +20,7 @@ export class ProfileController {
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: 200, description: 'User profile', type: Object })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getProfile(@Request() req): Promise<User> {
+  async getProfile(@Request() req): Promise<IUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: req.user.userId },
     });

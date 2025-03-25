@@ -1,10 +1,10 @@
-import { Channel } from '@snooze/shared-types';
+import { IChannel } from '@snooze/shared-types';
 import apiClient from './apiClient';
 
 export const getChannels = async (
-  serverId: number,
+  serverId: string,
   accessToken: string,
-): Promise<Channel[]> => {
+): Promise<IChannel[]> => {
   const response = await apiClient.get(`/channels/${serverId}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -12,9 +12,9 @@ export const getChannels = async (
 };
 
 export const getTextChannels = async (
-  serverId: number,
+  serverId: string,
   accessToken: string,
-): Promise<Channel[]> => {
+): Promise<IChannel[]> => {
   const response = await apiClient.get(`/channels/${serverId}/text`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -22,9 +22,9 @@ export const getTextChannels = async (
 };
 
 export const getVoiceChannels = async (
-  serverId: number,
+  serverId: string,
   accessToken: string,
-): Promise<Channel[]> => {
+): Promise<IChannel[]> => {
   const response = await apiClient.get(`/channels/${serverId}/voice`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -33,10 +33,10 @@ export const getVoiceChannels = async (
 
 export const createChannel = async (
   name: string,
-  serverId: number,
+  serverId: string,
   type: 'TEXT' | 'VOICE',
   accessToken: string,
-): Promise<Channel> => {
+): Promise<IChannel> => {
   const response = await apiClient.post(
     '/channels',
     { name, serverId, type },

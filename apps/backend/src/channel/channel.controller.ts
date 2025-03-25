@@ -1,8 +1,21 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -17,7 +30,10 @@ export class ChannelController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Post()
   create(@Body() createChannelDto: CreateChannelDto, @Request() req) {
-    return this.channelsService.createChannel(createChannelDto, req.user.userId);
+    return this.channelsService.createChannel(
+      createChannelDto,
+      req.user.userId,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -28,7 +44,7 @@ export class ChannelController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Get(':serverId')
   findAll(@Param('serverId') serverId: string, @Request() req) {
-    return this.channelsService.findAll(+serverId, req.user.userId);
+    return this.channelsService.findAll(serverId, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -39,7 +55,7 @@ export class ChannelController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Get(':serverId/text')
   findTextChannels(@Param('serverId') serverId: string, @Request() req) {
-    return this.channelsService.findTextChannels(+serverId, req.user.userId);
+    return this.channelsService.findTextChannels(serverId, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,6 +66,6 @@ export class ChannelController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Get(':serverId/voice')
   findVoiceChannels(@Param('serverId') serverId: string, @Request() req) {
-    return this.channelsService.findVoiceChannels(+serverId, req.user.userId);
+    return this.channelsService.findVoiceChannels(serverId, req.user.userId);
   }
 }

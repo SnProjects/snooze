@@ -60,7 +60,7 @@ export const RouterWrapper: React.FC<RouterWrapperProps> = ({ children }) => {
 
     // if the serverid is valid, but the user is not in the server
     if (serverId) {
-      const server = servers.find((s) => s.id === Number(serverId));
+      const server = servers.find((s) => s.id === serverId);
       if (!server) {
         nav('/app');
         return;
@@ -74,12 +74,12 @@ export const RouterWrapper: React.FC<RouterWrapperProps> = ({ children }) => {
     if (!channelId) {
       if (channels.length > 0) {
         const channel = channels[0];
-        if (channel.serverId === Number(serverId)) {
+        if (channel.serverId === serverId) {
           nav(`/app/${serverId}/${channels[0].id}`);
           return;
         } else {
           // fetch the first channel in the server
-          await fetchChannels(Number(serverId));
+          await fetchChannels(serverId);
           const channel = channels[0];
           if (channel) {
             nav(`/app/${serverId}/${channel.id}`);
@@ -93,7 +93,7 @@ export const RouterWrapper: React.FC<RouterWrapperProps> = ({ children }) => {
 
     // if the channelId is valid, but the channel is not in the server
     if (channelId) {
-      const channel = channels.find((c) => c.id === Number(channelId));
+      const channel = channels.find((c) => c.id === channelId);
       if (!channel && channels.length > 0) {
         const channel = channels[0];
         nav(`/app/${serverId}/${channel.id}`);
@@ -102,16 +102,16 @@ export const RouterWrapper: React.FC<RouterWrapperProps> = ({ children }) => {
     }
 
     // check if the server is different from the current server
-    if (currentServer && currentServer.id !== Number(serverId)) {
-      const server = servers.find((s) => s.id === Number(serverId));
+    if (currentServer && currentServer.id !== serverId) {
+      const server = servers.find((s) => s.id === serverId);
       if (server) {
         await setCurrentServer(server);
       }
     }
 
     // check if the channel is different from the current channel
-    if (currentChannel && currentChannel.id !== Number(channelId)) {
-      const channel = channels.find((c) => c.id === Number(channelId));
+    if (currentChannel && currentChannel.id !== channelId) {
+      const channel = channels.find((c) => c.id === channelId);
       if (channel) {
         await setCurrentChannel(channel);
       }

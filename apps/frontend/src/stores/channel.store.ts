@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Channel } from '@snooze/shared-types';
+import { IChannel, IServerMember } from '@snooze/shared-types';
 import {
   getTextChannels,
   getVoiceChannels,
@@ -8,21 +8,22 @@ import {
 import { useAuthStore } from './auth.store';
 
 interface ChannelState {
-  textChannels: Channel[];
-  voiceChannels: Channel[];
-  voiceMembers: Map<number, string[]>;
-  currentChannel: Channel | null;
-  allChannels: () => Channel[];
-  fetchChannels: (serverId: number) => Promise<void>;
-  setCurrentChannel: (channel: Channel | null) => void;
+  textChannels: IChannel[];
+  voiceChannels: IChannel[];
+  voiceMembers: Map<string, string[]>;
+  currentChannel: IChannel | null;
+  allChannels: () => IChannel[];
+  fetchChannels: (serverId: string) => Promise<void>;
+  setCurrentChannel: (channel: IChannel | null) => void;
   createChannel: (
     name: string,
-    serverId: number,
+    serverId: string,
     type: 'TEXT' | 'VOICE',
   ) => Promise<void>;
-  getAllChannels: () => Channel[];
-  addVoiceMember: (channelId: number, userId: number) => void;
-  removeVoiceMember: (channelId: number, userId: number) => void;
+  getAllChannels: () => IChannel[];
+  addVoiceMember: (channelId: string, userId: string) => void;
+  removeVoiceMember: (channelId: string, userId: string) => void;
+  updateVoicePeers: (channelId: string, peers: IServerMember[]) => void;
 }
 
 export const useChannelStore = create<ChannelState>((set) => ({
@@ -30,13 +31,13 @@ export const useChannelStore = create<ChannelState>((set) => ({
   voiceChannels: [],
   currentChannel: null,
   voiceMembers: new Map(),
-  allChannels: (): Channel[] => {
+  allChannels: (): IChannel[] => {
     return [
       ...useChannelStore.getState().textChannels,
       ...useChannelStore.getState().voiceChannels,
     ];
   },
-  fetchChannels: async (serverId: number) => {
+  fetchChannels: async (serverId: string) => {
     const accessToken = useAuthStore.getState().accessToken;
     if (!accessToken) return;
     try {
@@ -56,7 +57,7 @@ export const useChannelStore = create<ChannelState>((set) => ({
   setCurrentChannel: (channel) => set({ currentChannel: channel }),
   createChannel: async (
     name: string,
-    serverId: number,
+    serverId: string,
     type: 'TEXT' | 'VOICE',
   ) => {
     const accessToken = useAuthStore.getState().accessToken;
@@ -78,7 +79,7 @@ export const useChannelStore = create<ChannelState>((set) => ({
       throw error;
     }
   },
-  getAllChannels: (): Channel[] => {
+  getAllChannels: (): IChannel[] => {
     return [
       ...useChannelStore.getState().textChannels,
       ...useChannelStore.getState().voiceChannels,
@@ -97,11 +98,28 @@ export const useChannelStore = create<ChannelState>((set) => ({
   removeVoiceMember: (channelId, userId) => {
     const members =
       useChannelStore.getState().voiceMembers.get(channelId) || [];
+
     const newMembers = members.filter((id) => id !== userId.toString());
+
     useChannelStore.setState({
       voiceMembers: new Map(
         useChannelStore.getState().voiceMembers.set(channelId, newMembers),
       ),
     });
+  },
+  updateVoicePeers: (channelId, peers) => {
+    console.log('updating voice peers', peers);
+    const newChannels = useChannelStore
+      .getState()
+      .voiceChannels.map((channel) =>
+        channel.id === channelId ? { ...channel, peers } : channel,
+      );
+    set({ voiceChannels: newChannels });
+
+    // update current channel if it's the same
+    const currentChannel = useChannelStore.getState().currentChannel;
+    if (currentChannel?.id === channelId) {
+      set({ currentChannel: { ...currentChannel, peers } });
+    }
   },
 }));

@@ -36,6 +36,7 @@ import {
   FiGlobe,
 } from 'react-icons/fi';
 import ThemeSwitch from '../ui/theme-switch';
+import { colorPalette } from '../../theme/colors';
 
 export function ServerSidebar() {
   const { servers, currentServer, setCurrentServer, createServer, joinServer } =
@@ -65,13 +66,9 @@ export function ServerSidebar() {
       setServerError('Server ID cannot be empty');
       return;
     }
-    const serverIdNum = parseInt(serverId, 10);
-    if (isNaN(serverIdNum)) {
-      setServerError('Server ID must be a number');
-      return;
-    }
+
     try {
-      await joinServer(serverIdNum);
+      await joinServer(serverId);
       setServerId('');
       setServerError('');
     } catch (err: any) {
@@ -85,9 +82,9 @@ export function ServerSidebar() {
     setServerError('');
   };
 
-  const handleServerClick = (serverId: number) => {
+  const handleServerClick = (serverId: string) => {
     navigate(`/app/${serverId}`);
-  }
+  };
 
   return (
     <Box w="72px" p={3} display="flex" flexDir="column" alignItems="center">
@@ -290,7 +287,7 @@ export function ServerSidebar() {
         <Menu.Root>
           <Menu.Trigger asChild _focus={{ outline: 'none' }} cursor="pointer">
             <Box>
-              <Avatar.Root backgroundColor={'bg'}>
+              <Avatar.Root colorPalette="teal">
                 <Avatar.Fallback name={user?.username || 'User'} />
                 <Avatar.Image />
               </Avatar.Root>

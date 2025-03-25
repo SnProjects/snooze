@@ -37,7 +37,7 @@ export class ServerController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Get(':id/users')
   findUsers(@Param('id') id: string, @Request() req) {
-    return this.serverService.findUsers(+id, req.user.userId);
+    return this.serverService.findUsers(id, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -48,6 +48,6 @@ export class ServerController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @Post(':id/join')
   join(@Param('id') id: string, @Request() req) {
-    return this.serverService.join(+id, req.user.userId);
+    return this.serverService.join(id, req.user.userId);
   }
 }

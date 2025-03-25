@@ -1,44 +1,48 @@
-export interface User {
-  id: number;
+export interface ILiteUser {
+  id: string;
   username: string;
+}
+
+export interface IUser extends ILiteUser {
   email: string;
 }
 
-export interface Server {
-  id: number;
+export interface IServer {
+  id: string;
   name: string;
-  creatorId: number;
+  creatorId: string;
   creator: string;
   createdAt: string;
   tags?: string[];
 }
 
-export interface ServerMember {
-  id: number;
-  username: string;
+export interface IServerMember {
+  id: string;
   role: string;
-  userId: number;
-  serverId: number;
+  userId: string;
+  serverId: string;
+  user: ILiteUser;
 }
 
-export interface Channel {
-  id: number;
+export interface IChannel {
+  id: string;
   name: string;
   type: 'TEXT' | 'VOICE';
-  serverId: number;
+  serverId: string;
+  peers: IServerMember[];
 }
 
-export interface Message {
-  id: number;
+export interface IMessage {
+  id: string;
   content: string;
-  userId: number;
-  channelId: number;
-  serverId: number;
+  userId: string;
+  channelId: string;
+  serverId: string;
   username: string;
   createdAt: string;
 }
 
-export interface AuthResponse {
+export interface IAuthResponse {
   access_token: string;
   refresh_token: string;
 }
