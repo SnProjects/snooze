@@ -51,26 +51,11 @@
   ],
   "generators": {
     "@nx/react": {
-      "application": {
-        "babel": true,
-        "style": "tailwind",
-        "linter": "none",
-        "bundler": "vite"
-      },
-      "component": {
-        "style": "tailwind"
-      },
-      "library": {
-        "style": "tailwind",
-        "linter": "none"
-      }
+      "application": { "babel": true, "style": "tailwind", "linter": "none", "bundler": "vite" },
+      "component": { "style": "tailwind" },
+      "library": { "style": "tailwind", "linter": "none" }
     }
   },
-  "targetDefaults": {
-    "@nx/js:tsc": {
-      "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
-    }
-  }
+  "targetDefaults": { "@nx/js:tsc": { "cache": true, "dependsOn": ["^build"], "inputs": ["production", "^production"] } },
+  "nxCloudId": "67e7015731e3c5e9b6f156bc"
 }
