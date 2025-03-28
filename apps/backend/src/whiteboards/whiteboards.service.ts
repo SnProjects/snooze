@@ -26,4 +26,20 @@ export class WhiteboardsService {
       },
     });
   }
+
+  async getWhiteboardData(id: string) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id },
+    });
+
+    if (!channel) {
+      throw new ConflictException('Channel not found');
+    }
+
+    if (channel.type !== 'WHITEBOARD') {
+      throw new ConflictException('Channel is not a whiteboard');
+    }
+
+    return channel.data;
+  }
 }

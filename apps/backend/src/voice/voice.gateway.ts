@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { VoiceService } from './voice.service';
 import { WebSocketProtocol } from '../custom-ws-adapter';
 
-@WebSocketGateway(3030, { cors: true, WEBSOCKET_PROTOCOL: WebSocketProtocol.SOCKET_IO })
+@WebSocketGateway({ cors: true, WEBSOCKET_PROTOCOL: WebSocketProtocol.SOCKET_IO })
 export class VoiceGateway {
   @WebSocketServer()
   server: Server;

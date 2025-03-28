@@ -6,10 +6,9 @@ import { ChannelModule } from '../channel/channel.module';
 import { ServerModule } from '../server/server.module';
 import { VoiceModule } from '../voice/voice.module';
 import { WhiteboardsModule } from '../whiteboards/whiteboards.module';
-import { SocketIOModule } from '../gateways/io.module';
 
 @Module({
-    imports: [ChatModule, AuthModule, ChannelModule, ServerModule, VoiceModule, WhiteboardsModule],
+    imports: [ChatModule, AuthModule, ChannelModule, ServerModule],
     providers: [PrismaService],
 })
 export class AppModule {}

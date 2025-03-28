@@ -18,7 +18,6 @@ export default function MiddleArea() {
     return <LoadingOverlay />;
   }
 
-
   return (
     <Box flex={1} display="flex" flexDir="column" backgroundColor={'bg.muted'}>
       {currentChannel.type === 'TEXT' && <Chat />}

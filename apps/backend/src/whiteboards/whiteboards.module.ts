@@ -8,5 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 @Module({
   controllers: [WhiteboardsController],
   providers: [WhiteboardsService, JwtService, PrismaService, WhiteboardsGateway],
+
 })
 export class WhiteboardsModule {}
